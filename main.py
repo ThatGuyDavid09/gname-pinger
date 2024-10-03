@@ -31,10 +31,7 @@ def check_email(email_filler):
     json_str = json.loads(response.text)
     valid = json_str["msg"][0] != "S"
 
-    with open(f"./{threading.current_thread().ident}.txt", "a+", encoding="utf-8") as f:
-        f.write(f"{email_filler}, {valid}\n")
-
-    return valid, email_filler, json_str if valid else None
+    return valid, email_filler, json_str["msg"]
     # return d.id
     # print(d.id)
 
@@ -47,12 +44,14 @@ if __name__ == "__main__":
     # response = requests.post('https://www.gname.com/request/send_email', data=data) # ,cookies=cookies, headers=headers)
     # print(response.text)
     # input()
-    with Pool(50) as pool:
+    with Pool(60) as pool:
         # print(list(pool.imap_unordered(check_email, [1, 2, 3, 4, 5])))
         for i in range(10):
             print(f"Starting length {i}...")
             task = itertools.product(charset, repeat=i)
             for valid, filler, text in pool.imap_unordered(check_email, task, chunksize=20 if i > 2 else 1):
+                with open(f"./tested.txt", "a+", encoding="utf-8") as f:
+                    f.write(f"{filler}, {valid}, {text}\n")
                 if valid:
                     print("FOUND RESULT")
                     print(filler)
